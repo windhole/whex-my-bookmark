@@ -1,0 +1,107 @@
+:root {
+  color-scheme: light dark;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 24px;
+  line-height: 1.45;
+}
+
+main {
+  max-width: 880px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+h1,
+h2 {
+  margin: 0 0 8px;
+}
+
+.lead {
+  margin: 0;
+  opacity: 0.85;
+}
+
+#markdown {
+  width: 100%;
+  min-height: 420px;
+  padding: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  border: 1px solid color-mix(in srgb, CanvasText 25%, Canvas);
+  border-radius: 8px;
+  background: Field;
+  color: FieldText;
+  resize: vertical;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+button,
+.file {
+  appearance: none;
+  border: 1px solid color-mix(in srgb, CanvasText 30%, Canvas);
+  background: Canvas;
+  color: CanvasText;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font: inherit;
+  cursor: pointer;
+}
+
+button.primary {
+  background: #0072b2;
+  color: #fff;
+  border-color: #0072b2;
+}
+
+.file input {
+  display: none;
+}
+
+#slot-legend {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+  padding: 0;
+  margin: 0;
+}
+
+#slot-legend li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.swatch {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  flex: none;
+}
+
+#status {
+  font-size: 13px;
+}
+
+code {
+  font-size: 0.95em;
+}

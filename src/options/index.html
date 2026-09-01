@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>My Bookmark — Markdown</title>
+    <link rel="stylesheet" href="./options.css" />
+  </head>
+  <body>
+    <main>
+      <h1>My Bookmark</h1>
+      <p class="lead">
+        The document is the source of truth. H1 headings are save slots (first eight).
+        Nested headings are folders. Bookmarks are <code>- [title](url)</code> with optional
+        indented annotation.
+      </p>
+      <section class="legend" aria-label="Save slots">
+        <h2>Save slots</h2>
+        <ol id="slot-legend"></ol>
+      </section>
+      <section>
+        <h2>Markdown</h2>
+        <textarea id="markdown" spellcheck="false"></textarea>
+        <div class="row">
+          <button type="button" id="save" class="primary">Save</button>
+          <button type="button" id="reload">Reload</button>
+          <label class="file">
+            Import
+            <input id="import" type="file" accept=".md,text/markdown,text/plain" />
+          </label>
+          <button type="button" id="export">Export</button>
+          <span id="status" role="status"></span>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="./options.ts"></script>
+  </body>
+</html>

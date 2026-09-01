@@ -1,0 +1,101 @@
+:root {
+  color-scheme: light dark;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  max-width: 360px;
+  padding: 12px;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.annotation {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: CanvasText;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 2.6em;
+  padding: 6px 8px;
+  border: 1px solid color-mix(in srgb, CanvasText 25%, Canvas);
+  border-radius: 6px;
+  background: Field;
+  color: FieldText;
+  font: inherit;
+}
+
+.slots {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.slot {
+  appearance: none;
+  border: 0;
+  border-radius: 10px;
+  min-height: 56px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2px;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+}
+
+.slot:focus-visible {
+  outline: 3px solid CanvasText;
+  outline-offset: 2px;
+}
+
+.slot .num {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  opacity: 0.9;
+}
+
+.slot .name {
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.2;
+}
+
+.slot.saved .name {
+  font-weight: 750;
+}
+
+.status {
+  min-height: 1.2em;
+  margin: 0;
+  font-size: 12px;
+}
+
+.hint {
+  margin: 0;
+  font-size: 11px;
+  opacity: 0.75;
+}
+
+a {
+  color: inherit;
+}

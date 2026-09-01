@@ -1,0 +1,20 @@
+{
+  "name": "whex-my-bookmark",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Personal bookmark extension: Markdown library plus eight color-coded save slots",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@crxjs/vite-plugin": "^2.7.1",
+    "@types/chrome": "^0.1.24",
+    "typescript": "^5.9.2",
+    "vite": "^6.3.5",
+    "vitest": "^3.2.4"
+  }
+}

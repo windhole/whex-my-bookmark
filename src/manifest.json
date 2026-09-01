@@ -1,0 +1,57 @@
+{
+  "manifest_version": 3,
+  "name": "My Bookmark",
+  "version": "0.1.0",
+  "description": "Markdown bookmark library with eight color-coded save slots.",
+  "permissions": ["storage", "contextMenus", "tabs"],
+  "icons": {
+    "16": "src/icons/icon16.png",
+    "32": "src/icons/icon32.png",
+    "48": "src/icons/icon48.png",
+    "128": "src/icons/icon128.png"
+  },
+  "action": {
+    "default_title": "Save current page",
+    "default_popup": "src/popup/index.html",
+    "default_icon": {
+      "16": "src/icons/icon16.png",
+      "32": "src/icons/icon32.png",
+      "48": "src/icons/icon48.png"
+    }
+  },
+  "options_page": "src/options/index.html",
+  "background": {
+    "service_worker": "src/background.ts",
+    "type": "module"
+  },
+  "commands": {
+    "save-area-1": {
+      "suggested_key": { "default": "Alt+1" },
+      "description": "Save current page to area 1"
+    },
+    "save-area-2": {
+      "suggested_key": { "default": "Alt+2" },
+      "description": "Save current page to area 2"
+    },
+    "save-area-3": {
+      "suggested_key": { "default": "Alt+3" },
+      "description": "Save current page to area 3"
+    },
+    "save-area-4": {
+      "suggested_key": { "default": "Alt+4" },
+      "description": "Save current page to area 4"
+    },
+    "save-area-5": {
+      "description": "Save current page to area 5"
+    },
+    "save-area-6": {
+      "description": "Save current page to area 6"
+    },
+    "save-area-7": {
+      "description": "Save current page to area 7"
+    },
+    "save-area-8": {
+      "description": "Save current page to area 8"
+    }
+  }
+}
