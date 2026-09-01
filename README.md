@@ -12,7 +12,7 @@ Firefox / Safari 向けパッケージはまだ出さない。`make firefox` と
 
 - **ツールバー左クリック**: 現在のページを `inbox`（`chrome.storage.local`）へ保存。バッジに件数が出る
 - **ページ右クリック / ツールバー右クリック**: import 済み Markdown と inbox を重ねた階層メニューからリンクを開く
-- **オプション**: Markdown の import と、inbox を `# inbox` に載せた merge 結果の export。編集画面は無い
+- **オプション**: Markdown の import、inbox を `# inbox` に載せた merge 結果の export、inbox の一括消去。編集画面は無い
 
 ## Markdown 方言
 

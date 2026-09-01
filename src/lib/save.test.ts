@@ -36,7 +36,7 @@ vi.stubGlobal("chrome", {
   },
 });
 
-import { INBOX_STORAGE_KEY } from "./storage";
+import { INBOX_STORAGE_KEY, clearInbox, getInbox } from "./storage";
 import { saveCurrentPageToInbox } from "./save";
 
 describe("saveCurrentPageToInbox", () => {
@@ -75,5 +75,21 @@ describe("saveCurrentPageToInbox", () => {
     state.tabs.push({ url: "chrome://extensions", title: "Extensions" });
     const result = await saveCurrentPageToInbox();
     expect(result).toEqual({ ok: false, reason: "no-tab" });
+  });
+});
+
+describe("clearInbox", () => {
+  beforeEach(() => {
+    state.local.clear();
+    state.tabs.length = 0;
+  });
+
+  it("removes every inbox entry", async () => {
+    state.tabs.push({ url: "https://a.example", title: "A" });
+    await saveCurrentPageToInbox();
+    expect((await getInbox()).length).toBe(1);
+    await clearInbox();
+    expect(await getInbox()).toEqual([]);
+    expect(state.local.get(INBOX_STORAGE_KEY)).toEqual([]);
   });
 });

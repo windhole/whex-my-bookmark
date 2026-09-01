@@ -19,11 +19,12 @@ chrome.runtime.onStartup.addListener(() => {
 });
 
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (
-    area === "local" &&
-    (changes.bookmarkMarkdown || changes.inboxEntries)
-  ) {
+  if (area !== "local") return;
+  if (changes.bookmarkMarkdown || changes.inboxEntries) {
     void queueMenuRebuild();
+  }
+  if (changes.inboxEntries) {
+    void refreshBadge();
   }
 });
 
@@ -40,7 +41,16 @@ void bootstrap();
 let menuBuild: Promise<void> = Promise.resolve();
 
 async function bootstrap(): Promise<void> {
+  await refreshBadge();
   await queueMenuRebuild();
+}
+
+async function refreshBadge(): Promise<void> {
+  const inbox = await getInbox();
+  await chrome.action.setBadgeBackgroundColor({ color: "#009E73" });
+  await chrome.action.setBadgeText({
+    text: inbox.length > 0 ? String(inbox.length) : "",
+  });
 }
 
 function queueMenuRebuild(): Promise<void> {

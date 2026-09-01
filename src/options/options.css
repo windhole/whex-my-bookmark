@@ -55,6 +55,17 @@ button.primary {
   border-color: #0072b2;
 }
 
+button.danger {
+  background: Canvas;
+  color: #d55e00;
+  border-color: #d55e00;
+}
+
+#inbox-count {
+  font-size: 13px;
+  opacity: 0.8;
+}
+
 .file input {
   display: none;
 }

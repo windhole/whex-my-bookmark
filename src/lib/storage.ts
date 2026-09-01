@@ -27,6 +27,10 @@ export async function appendInbox(entry: BookmarkEntry): Promise<number> {
   return inbox.length;
 }
 
+export async function clearInbox(): Promise<void> {
+  await chrome.storage.local.set({ [INBOX_STORAGE_KEY]: [] });
+}
+
 function isBookmarkEntry(value: unknown): value is BookmarkEntry {
   if (!value || typeof value !== "object") return false;
   const entry = value as BookmarkEntry;

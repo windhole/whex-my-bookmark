@@ -1,13 +1,21 @@
 import { requiredElement } from "../lib/dom";
 import { mergeInbox, parseMarkdown, serializeMarkdown } from "../lib/markdown";
-import { getInbox, getMarkdown, setMarkdown } from "../lib/storage";
+import { clearInbox, getInbox, getMarkdown, setMarkdown } from "../lib/storage";
 
 const importEl = requiredElement("#import", HTMLInputElement);
 const exportEl = requiredElement("#export", HTMLButtonElement);
+const clearEl = requiredElement("#clear-inbox", HTMLButtonElement);
+const countEl = requiredElement("#inbox-count", HTMLElement);
 const statusEl = requiredElement("#status", HTMLElement);
 
 function setStatus(text: string): void {
   statusEl.textContent = text;
+}
+
+async function refreshCount(): Promise<void> {
+  const inbox = await getInbox();
+  countEl.textContent =
+    inbox.length === 1 ? "1 item in inbox" : `${inbox.length} items in inbox`;
 }
 
 importEl.addEventListener("change", () => {
@@ -37,3 +45,22 @@ exportEl.addEventListener("click", () => {
     setStatus("Exported bookmarks.md");
   })();
 });
+
+clearEl.addEventListener("click", () => {
+  void (async () => {
+    const inbox = await getInbox();
+    if (inbox.length === 0) {
+      setStatus("Inbox is already empty.");
+      return;
+    }
+    const ok = window.confirm(
+      `Delete all ${inbox.length} inbox bookmark(s)? This cannot be undone.`,
+    );
+    if (!ok) return;
+    await clearInbox();
+    await refreshCount();
+    setStatus("Inbox cleared.");
+  })();
+});
+
+void refreshCount();
