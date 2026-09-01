@@ -1,6 +1,7 @@
 import { requiredElement } from "../lib/dom";
+import { exportFilename } from "../lib/export-filename";
 import { mergeInbox, parseMarkdown, serializeMarkdown } from "../lib/markdown";
-import { clearInbox, getInbox, getMarkdown, setMarkdown } from "../lib/storage";
+import { clearInbox, ensureLibrary, getInbox, setMarkdown } from "../lib/storage";
 
 const importEl = requiredElement("#import", HTMLInputElement);
 const exportEl = requiredElement("#export", HTMLButtonElement);
@@ -30,7 +31,7 @@ importEl.addEventListener("change", () => {
 
 exportEl.addEventListener("click", () => {
   void (async () => {
-    const markdown = await getMarkdown();
+    const markdown = await ensureLibrary();
     const inbox = await getInbox();
     const merged = serializeMarkdown(
       mergeInbox(parseMarkdown(markdown), inbox),
@@ -39,10 +40,11 @@ exportEl.addEventListener("click", () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "bookmarks.md";
+    const filename = exportFilename();
+    a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
-    setStatus("Exported bookmarks.md");
+    setStatus(`Exported ${filename}`);
   })();
 });
 
@@ -63,4 +65,4 @@ clearEl.addEventListener("click", () => {
   })();
 });
 
-void refreshCount();
+void ensureLibrary().then(() => refreshCount());

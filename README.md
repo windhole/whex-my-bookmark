@@ -6,13 +6,15 @@ Firefox / Safari 向けパッケージはまだ出さない。`make firefox` と
 
 ## 使い方
 
-1. `make chrome`（テストして `dist/chrome` をビルドする）
-2. Chrome で `chrome://extensions` を開き、デベロッパーモードをオンにする
-3. 「パッケージ化されていない拡張機能を読み込む」で `dist/chrome` を選ぶ
+1. （任意）初期メニュー用の Markdown を `data/bookmarks.md` に置く。個人の URL なので gitignore 済み
+2. `make chrome`（テストして `dist/chrome` をビルドする。`data/bookmarks.md` があればその時点の内容を埋め込む）
+3. Chrome で `chrome://extensions` を開き、デベロッパーモードをオンにする
+4. 「パッケージ化されていない拡張機能を読み込む」で `dist/chrome` を選ぶ
 
 - **ツールバー左クリック**: 現在のページを `inbox`（`chrome.storage.local`）へ保存。バッジに件数が出る
-- **ページ右クリック / ツールバー右クリック**: import 済み Markdown と inbox を重ねた階層メニューからリンクを開く
-- **オプション**: Markdown の import、inbox を `# inbox` に載せた merge 結果の export、inbox の一括消去。編集画面は無い
+- **ページ右クリック / ツールバー右クリック**: 書庫 Markdown と inbox を重ねた階層メニューからリンクを開く。書庫の初期値は、storage にまだ無いときだけビルド時の `data/bookmarks.md`
+- **オプション**: Markdown の import、inbox を `# inbox` に載せた merge 結果の export（ファイル名は `bookmarks_YYYYMMDD-HHmm.md`）、inbox の一括消去。編集画面は無い
+- `data/bookmarks.md` を直したらビルドし直す。すでに書庫キーがあるプロファイルは、オプションから import し直すか `bookmarkMarkdown` を消す
 
 ## Markdown 方言
 

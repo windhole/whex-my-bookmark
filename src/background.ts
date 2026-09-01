@@ -5,17 +5,33 @@ import {
 } from "./lib/menu-tree";
 import { mergeInbox, parseMarkdown } from "./lib/markdown";
 import { saveCurrentPageToInbox } from "./lib/save";
-import { getInbox, getMarkdown } from "./lib/storage";
+import { ensureLibrary, getInbox } from "./lib/storage";
 
 const PAGE_ROOT_ID = "whex-page-root";
 const SESSION_TARGETS_KEY = "menuTargets";
+const SESSION_MENU_IDS_KEY = "menuItemIds";
+
+let work: Promise<void> = Promise.resolve();
+
+function enqueue(task: () => Promise<void>): Promise<void> {
+  work = work.then(task, task);
+  return work;
+}
+
+function queueBootstrap(): Promise<void> {
+  return enqueue(bootstrap);
+}
+
+function queueMenuRebuild(): Promise<void> {
+  return enqueue(rebuildMenus);
+}
 
 chrome.runtime.onInstalled.addListener(() => {
-  void bootstrap();
+  void queueBootstrap();
 });
 
 chrome.runtime.onStartup.addListener(() => {
-  void bootstrap();
+  void queueBootstrap();
 });
 
 chrome.storage.onChanged.addListener((changes, area) => {
@@ -36,13 +52,12 @@ chrome.action.onClicked.addListener(() => {
   void saveFromToolbar();
 });
 
-void bootstrap();
-
-let menuBuild: Promise<void> = Promise.resolve();
+void queueBootstrap();
 
 async function bootstrap(): Promise<void> {
+  await ensureLibrary();
   await refreshBadge();
-  await queueMenuRebuild();
+  await rebuildMenus();
 }
 
 async function refreshBadge(): Promise<void> {
@@ -51,11 +66,6 @@ async function refreshBadge(): Promise<void> {
   await chrome.action.setBadgeText({
     text: inbox.length > 0 ? String(inbox.length) : "",
   });
-}
-
-function queueMenuRebuild(): Promise<void> {
-  menuBuild = menuBuild.then(rebuildMenus, rebuildMenus);
-  return menuBuild;
 }
 
 async function saveFromToolbar(): Promise<void> {
@@ -70,52 +80,134 @@ async function saveFromToolbar(): Promise<void> {
 }
 
 async function rebuildMenus(): Promise<void> {
-  const markdown = await getMarkdown();
+  const markdown = await ensureLibrary();
   const inbox = await getInbox();
   const { areas } = mergeInbox(parseMarkdown(markdown), inbox);
-  await chrome.contextMenus.removeAll();
+
+  await clearMenus();
 
   const targets: Record<string, string> = {};
+  const createdIds: string[] = [];
   let seq = 0;
   const nextId = () => `m${++seq}`;
 
   const pageRoot = areasToPageMenu(areas);
-  chrome.contextMenus.create({
+  await createMenuItem({
     id: PAGE_ROOT_ID,
     title: pageRoot.title,
     contexts: ["page"],
   });
-  createItems(pageRoot.children, PAGE_ROOT_ID, ["page"], nextId, targets);
+  createdIds.push(PAGE_ROOT_ID);
+  await createItems(
+    pageRoot.children,
+    PAGE_ROOT_ID,
+    ["page"],
+    nextId,
+    targets,
+    createdIds,
+  );
 
   const actionItems = areasToActionMenu(areas);
-  createItems(actionItems, undefined, ["action"], nextId, targets);
+  await createItems(
+    actionItems,
+    undefined,
+    ["action"],
+    nextId,
+    targets,
+    createdIds,
+  );
 
-  await chrome.storage.session.set({ [SESSION_TARGETS_KEY]: targets });
+  await chrome.storage.session.set({
+    [SESSION_TARGETS_KEY]: targets,
+    [SESSION_MENU_IDS_KEY]: createdIds,
+  });
 }
 
 type MenuContexts = NonNullable<chrome.contextMenus.CreateProperties["contexts"]>;
 
-function createItems(
+async function createItems(
   nodes: MenuNode[],
   parentId: string | undefined,
   contexts: MenuContexts,
   nextId: () => string,
   targets: Record<string, string>,
-): void {
+  createdIds: string[],
+): Promise<void> {
   for (const node of nodes) {
     const id = nextId();
-    chrome.contextMenus.create({
+    const properties: chrome.contextMenus.CreateProperties = {
       id,
-      parentId,
       title: node.title,
       contexts,
-    });
+    };
+    if (parentId !== undefined) {
+      properties.parentId = parentId;
+    }
+    await createMenuItem(properties);
+    createdIds.push(id);
     if (node.kind === "link") {
       targets[id] = node.url;
     } else {
-      createItems(node.children, id, contexts, nextId, targets);
+      await createItems(
+        node.children,
+        id,
+        contexts,
+        nextId,
+        targets,
+        createdIds,
+      );
     }
   }
+}
+
+async function clearMenus(): Promise<void> {
+  const stored = await chrome.storage.session.get(SESSION_MENU_IDS_KEY);
+  const ids = stored[SESSION_MENU_IDS_KEY];
+  if (Array.isArray(ids)) {
+    for (const id of ids) {
+      if (typeof id === "string") {
+        await removeMenuItem(id);
+      }
+    }
+  }
+  await removeAllMenuItems();
+}
+
+function createMenuItem(
+  properties: chrome.contextMenus.CreateProperties,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    chrome.contextMenus.create(properties, () => {
+      const message = chrome.runtime.lastError?.message;
+      if (message) {
+        reject(new Error(message));
+        return;
+      }
+      resolve();
+    });
+  });
+}
+
+function removeMenuItem(id: string): Promise<void> {
+  return new Promise((resolve) => {
+    chrome.contextMenus.remove(id, () => {
+      void chrome.runtime.lastError;
+      resolve();
+    });
+  });
+}
+
+function removeAllMenuItems(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    chrome.contextMenus.removeAll(() => {
+      const message = chrome.runtime.lastError?.message;
+      if (message) {
+        reject(new Error(message));
+        return;
+      }
+      resolve();
+    });
+  });
 }
 
 async function openMenuTarget(menuItemId: string): Promise<void> {

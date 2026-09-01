@@ -1,3 +1,4 @@
+import { DEFAULT_LIBRARY_MARKDOWN } from "virtual:default-library";
 import type { BookmarkEntry } from "./markdown";
 
 export const MARKDOWN_STORAGE_KEY = "bookmarkMarkdown";
@@ -11,6 +12,21 @@ export async function getMarkdown(): Promise<string> {
 
 export async function setMarkdown(markdown: string): Promise<void> {
   await chrome.storage.local.set({ [MARKDOWN_STORAGE_KEY]: markdown });
+}
+
+export async function ensureLibrary(
+  bundledMarkdown = DEFAULT_LIBRARY_MARKDOWN,
+): Promise<string> {
+  const result = await chrome.storage.local.get(MARKDOWN_STORAGE_KEY);
+  const value = result[MARKDOWN_STORAGE_KEY];
+  if (typeof value === "string") {
+    return value;
+  }
+  if (bundledMarkdown.trim() !== "") {
+    await setMarkdown(bundledMarkdown);
+    return bundledMarkdown;
+  }
+  return "";
 }
 
 export async function getInbox(): Promise<BookmarkEntry[]> {
