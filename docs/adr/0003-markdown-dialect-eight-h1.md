@@ -1,7 +1,7 @@
 # 0003. 制限付き Markdown 方言と先頭8つの H1 が保存スロット
 
 Date: 2026-09-01
-Status: Accepted
+Status: Accepted (save-slot mapping superseded by ADR-0006)
 
 ## Context
 
@@ -11,14 +11,11 @@ Status: Accepted
 
 - 自前パーサで次のサブセットだけ扱う。ATX 見出し（`#`〜）、`- [title](url)`、その直後のインデント行を annotation。
 - H1 がエリア。H2 以降がメニュー上のフォルダ。リスト項目がブックマーク。
-- 文書先頭から8個の H1 がスロット 1–8。色と `Alt+1`〜`Alt+8` はスロット番号。H1 文言がボタン名。
-- H1 が8未満なら空エリアを末尾に足す。9個目以降の H1 はメニューに出すが保存先にしない。
-- 保存は指定 H1 セクションの末尾（そのエリア直下の子の最後）へ追記する。
+- ワンタッチ保存先と見出しの対応は ADR-0006（inbox は local 配列。Markdown の `# inbox` は export 時の merge 先）。
 - 不明な行は serialize で落ちてよい。同一 URL の重複は許可する。
 - Chrome の contextMenus 深さ制限に収まるよう、深すぎる見出しは親ラベルへ結合して潰す。
 
 ## Consequences
 
-- import/export と保存追記が同じ木構造で回る。フル Markdown 互換ではない。
-- エリア名の変更は H1 を書き換えるだけで、色・ショートカットは番号のまま。
-- 8枠より多いトップレベル分類はメニュー専用になり、保存ショートカットは付かない。
+- import した Markdown はメニュー用。保存分との足し方は ADR-0006。
+- フル Markdown 互換ではない。不明な行は serialize で落ちてよい。

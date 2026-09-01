@@ -1,7 +1,7 @@
 # 0002. 正本は Markdown 文字列、永続化は chrome.storage.local
 
 Date: 2026-09-01
-Status: Accepted
+Status: Superseded by ADR-0006
 
 ## Context
 

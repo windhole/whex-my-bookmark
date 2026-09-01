@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const state = vi.hoisted(() => ({
   local: new Map<string, unknown>(),
-  tabs: [] as { url?: string; title?: string }[],
+  tabs: [] as { url?: string; title?: string; pendingUrl?: string }[],
 }));
 
 vi.stubGlobal("chrome", {
@@ -16,42 +16,64 @@ vi.stubGlobal("chrome", {
       },
     },
   },
+  windows: {
+    getLastFocused: async () => ({
+      id: 1,
+      tabs: state.tabs.map((tab, index) => ({
+        ...tab,
+        id: index + 1,
+        active: true,
+      })),
+    }),
+  },
   tabs: {
-    query: async () => state.tabs,
+    query: async () =>
+      state.tabs.map((tab, index) => ({
+        ...tab,
+        id: index + 1,
+        active: true,
+      })),
   },
 });
 
-import { parseMarkdown } from "./markdown";
-import { saveActiveTabToArea } from "./save";
-import { MARKDOWN_STORAGE_KEY } from "./storage";
+import { INBOX_STORAGE_KEY } from "./storage";
+import { saveCurrentPageToInbox } from "./save";
 
-describe("saveActiveTabToArea", () => {
+describe("saveCurrentPageToInbox", () => {
   beforeEach(() => {
     state.local.clear();
     state.tabs.length = 0;
   });
 
-  it("appends the active tab under the chosen H1", async () => {
+  it("appends the active tab to the inbox array", async () => {
     state.tabs.push({
       url: "https://example.com/page",
       title: "Example Page",
     });
-    const result = await saveActiveTabToArea(0, "read later");
-    expect(result).toMatchObject({ ok: true, areaTitle: "Inbox" });
-    const markdown = state.local.get(MARKDOWN_STORAGE_KEY);
-    expect(typeof markdown).toBe("string");
-    const doc = parseMarkdown(markdown as string);
-    expect(doc.areas[0].children.at(-1)).toEqual({
-      type: "bookmark",
-      title: "Example Page",
-      url: "https://example.com/page",
-      annotation: "read later",
+    const result = await saveCurrentPageToInbox();
+    expect(result).toMatchObject({ ok: true, title: "Example Page", inboxCount: 1 });
+    expect(state.local.get(INBOX_STORAGE_KEY)).toEqual([
+      {
+        type: "bookmark",
+        title: "Example Page",
+        url: "https://example.com/page",
+        annotation: "",
+      },
+    ]);
+  });
+
+  it("uses pendingUrl when url is still empty", async () => {
+    state.tabs.push({
+      pendingUrl: "https://example.com/loading",
+      title: "Loading",
     });
+    const result = await saveCurrentPageToInbox();
+    expect(result).toMatchObject({ ok: true, inboxCount: 1 });
   });
 
   it("refuses chrome:// tabs", async () => {
     state.tabs.push({ url: "chrome://extensions", title: "Extensions" });
-    const result = await saveActiveTabToArea(0, "");
-    expect(result).toEqual({ ok: false, reason: "unsavable" });
+    const result = await saveCurrentPageToInbox();
+    expect(result).toEqual({ ok: false, reason: "no-tab" });
   });
 });

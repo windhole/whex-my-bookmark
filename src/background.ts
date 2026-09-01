@@ -1,12 +1,11 @@
-import { SAVE_SLOT_COUNT } from "./lib/areas";
 import {
   areasToActionMenu,
   areasToPageMenu,
   type MenuNode,
 } from "./lib/menu-tree";
-import { parseMarkdown } from "./lib/markdown";
-import { saveActiveTabToArea, type RuntimeMessage } from "./lib/save";
-import { ensureInitialized } from "./lib/storage";
+import { mergeInbox, parseMarkdown } from "./lib/markdown";
+import { saveCurrentPageToInbox } from "./lib/save";
+import { getInbox, getMarkdown } from "./lib/storage";
 
 const PAGE_ROOT_ID = "whex-page-root";
 const SESSION_TARGETS_KEY = "menuTargets";
@@ -20,7 +19,10 @@ chrome.runtime.onStartup.addListener(() => {
 });
 
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === "local" && changes.bookmarkMarkdown) {
+  if (
+    area === "local" &&
+    (changes.bookmarkMarkdown || changes.inboxEntries)
+  ) {
     void queueMenuRebuild();
   }
 });
@@ -29,35 +31,15 @@ chrome.contextMenus.onClicked.addListener((info) => {
   void openMenuTarget(String(info.menuItemId));
 });
 
-chrome.commands.onCommand.addListener((command) => {
-  const match = /^save-area-([1-8])$/.exec(command);
-  if (!match) return;
-  const areaIndex = Number(match[1]) - 1;
-  void saveActiveTabToArea(areaIndex, "");
+chrome.action.onClicked.addListener(() => {
+  void saveFromToolbar();
 });
-
-chrome.runtime.onMessage.addListener(
-  (message: RuntimeMessage, _sender, sendResponse) => {
-    if (message.type !== "SAVE_TO_AREA") {
-      return;
-    }
-    if (message.areaIndex < 0 || message.areaIndex >= SAVE_SLOT_COUNT) {
-      sendResponse({ ok: false, reason: "unsavable" });
-      return;
-    }
-    void saveActiveTabToArea(message.areaIndex, message.annotation ?? "").then(
-      sendResponse,
-    );
-    return true;
-  },
-);
 
 void bootstrap();
 
 let menuBuild: Promise<void> = Promise.resolve();
 
 async function bootstrap(): Promise<void> {
-  await ensureInitialized();
   await queueMenuRebuild();
 }
 
@@ -66,9 +48,21 @@ function queueMenuRebuild(): Promise<void> {
   return menuBuild;
 }
 
+async function saveFromToolbar(): Promise<void> {
+  const result = await saveCurrentPageToInbox();
+  if (!result.ok) {
+    await chrome.action.setBadgeBackgroundColor({ color: "#D55E00" });
+    await chrome.action.setBadgeText({ text: "!" });
+    return;
+  }
+  await chrome.action.setBadgeBackgroundColor({ color: "#009E73" });
+  await chrome.action.setBadgeText({ text: String(result.inboxCount) });
+}
+
 async function rebuildMenus(): Promise<void> {
-  const markdown = await ensureInitialized();
-  const { areas } = parseMarkdown(markdown);
+  const markdown = await getMarkdown();
+  const inbox = await getInbox();
+  const { areas } = mergeInbox(parseMarkdown(markdown), inbox);
   await chrome.contextMenus.removeAll();
 
   const targets: Record<string, string> = {};

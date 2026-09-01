@@ -1,4 +1,4 @@
-import { DEFAULT_AREA_NAMES, SAVE_SLOT_COUNT } from "./areas";
+import { INBOX_TITLE, isInboxTitle } from "./areas";
 
 export type BookmarkEntry = {
   type: "bookmark";
@@ -38,7 +38,7 @@ export function parseMarkdown(src: string): BookmarkDocument {
 
   const ensureArea = (): AreaNode => {
     if (!currentArea) {
-      currentArea = { type: "area", title: DEFAULT_AREA_NAMES[0], children: [] };
+      currentArea = { type: "area", title: INBOX_TITLE, children: [] };
       areas.push(currentArea);
     }
     return currentArea;
@@ -113,47 +113,8 @@ export function parseMarkdown(src: string): BookmarkDocument {
   return { areas };
 }
 
-export function ensureEightAreas(doc: BookmarkDocument): BookmarkDocument {
-  const areas = doc.areas.map(cloneArea);
-  for (let i = areas.length; i < SAVE_SLOT_COUNT; i++) {
-    areas.push({
-      type: "area",
-      title: DEFAULT_AREA_NAMES[i],
-      children: [],
-    });
-  }
-  return { areas };
-}
-
-export function saveSlots(doc: BookmarkDocument): AreaNode[] {
-  return ensureEightAreas(doc).areas.slice(0, SAVE_SLOT_COUNT);
-}
-
-export function appendBookmark(
-  doc: BookmarkDocument,
-  areaIndex: number,
-  entry: Pick<BookmarkEntry, "title" | "url" | "annotation">,
-): BookmarkDocument {
-  if (areaIndex < 0 || areaIndex >= SAVE_SLOT_COUNT) {
-    throw new Error(`areaIndex must be 0..${SAVE_SLOT_COUNT - 1}`);
-  }
-  const ensured = ensureEightAreas(doc);
-  const bookmark: BookmarkEntry = {
-    type: "bookmark",
-    title: sanitizeTitle(entry.title),
-    url: sanitizeUrl(entry.url),
-    annotation: entry.annotation.trim(),
-  };
-  return {
-    areas: ensured.areas.map((area, i) =>
-      i === areaIndex
-        ? { ...area, children: [...area.children, bookmark] }
-        : area,
-    ),
-  };
-}
-
 export function serializeMarkdown(doc: BookmarkDocument): string {
+  if (doc.areas.length === 0) return "";
   const lines: string[] = [];
   for (const area of doc.areas) {
     if (lines.length > 0) {
@@ -165,14 +126,35 @@ export function serializeMarkdown(doc: BookmarkDocument): string {
   return `${lines.join("\n").trimEnd()}\n`;
 }
 
-export function defaultMarkdown(): string {
-  return serializeMarkdown({
-    areas: DEFAULT_AREA_NAMES.map((title) => ({
-      type: "area",
-      title,
-      children: [],
-    })),
-  });
+export function makeBookmark(
+  entry: Pick<BookmarkEntry, "title" | "url" | "annotation">,
+): BookmarkEntry {
+  return {
+    type: "bookmark",
+    title: sanitizeTitle(entry.title),
+    url: sanitizeUrl(entry.url),
+    annotation: entry.annotation.trim(),
+  };
+}
+
+export function mergeInbox(
+  doc: BookmarkDocument,
+  entries: BookmarkEntry[],
+): BookmarkDocument {
+  const areas = doc.areas.map(cloneArea);
+  const bookmarks = entries.map((entry) => makeBookmark(entry));
+  const existing = areas.find((area) => isInboxTitle(area.title));
+  if (existing) {
+    existing.title = INBOX_TITLE;
+    existing.children = [...existing.children, ...bookmarks];
+    return { areas };
+  }
+  return {
+    areas: [
+      { type: "area", title: INBOX_TITLE, children: bookmarks },
+      ...areas,
+    ],
+  };
 }
 
 function writeChildren(children: TreeNode[], lines: string[]): void {

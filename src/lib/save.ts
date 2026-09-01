@@ -1,43 +1,26 @@
-import {
-  appendBookmark,
-  parseMarkdown,
-  serializeMarkdown,
-} from "./markdown";
-import { ensureInitialized, setMarkdown } from "./storage";
-import { canSaveUrl, getActiveTab } from "./tabs";
+import { makeBookmark } from "./markdown";
+import { appendInbox } from "./storage";
+import { getPageToSave } from "./tabs";
 
 export type SaveResult =
-  | { ok: true; title: string; areaTitle: string }
-  | { ok: false; reason: "no-tab" | "unsavable" };
+  | { ok: true; title: string; inboxCount: number }
+  | { ok: false; reason: "no-tab" | "unsavable" | "failed" };
 
-export async function saveActiveTabToArea(
-  areaIndex: number,
-  annotation: string,
-): Promise<SaveResult> {
-  const tab = await getActiveTab();
-  if (!tab) {
+export async function saveCurrentPageToInbox(): Promise<SaveResult> {
+  const page = await getPageToSave();
+  if (!page) {
     return { ok: false, reason: "no-tab" };
   }
-  if (!canSaveUrl(tab.url)) {
-    return { ok: false, reason: "unsavable" };
+  try {
+    const inboxCount = await appendInbox(
+      makeBookmark({
+        title: page.title,
+        url: page.url,
+        annotation: "",
+      }),
+    );
+    return { ok: true, title: page.title, inboxCount };
+  } catch {
+    return { ok: false, reason: "failed" };
   }
-  const markdown = await ensureInitialized();
-  const doc = parseMarkdown(markdown);
-  const next = appendBookmark(doc, areaIndex, {
-    title: tab.title?.trim() || tab.url,
-    url: tab.url,
-    annotation,
-  });
-  await setMarkdown(serializeMarkdown(next));
-  return {
-    ok: true,
-    title: tab.title?.trim() || tab.url,
-    areaTitle: next.areas[areaIndex]?.title ?? `Area ${areaIndex + 1}`,
-  };
 }
-
-export type RuntimeMessage =
-  | { type: "SAVE_TO_AREA"; areaIndex: number; annotation?: string }
-  | { type: "GET_SAVE_RESULT" };
-
-export type SaveToAreaResponse = SaveResult;

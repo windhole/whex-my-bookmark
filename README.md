@@ -1,6 +1,6 @@
 # My Bookmark
 
-個人用の Chrome 拡張。Markdown を正本にして、階層メニューからブックマークを開き、ツールバーの色付き8スロットに現在のページを保存する。
+個人用の Chrome 拡張。ツールバーボタンで今のページを `inbox` に保存し、import した Markdown を階層メニューから開く。
 
 Firefox / Safari 向けパッケージはまだ出さない。`make firefox` と `make safari` は将来の差し込み口。
 
@@ -10,31 +10,28 @@ Firefox / Safari 向けパッケージはまだ出さない。`make firefox` と
 2. Chrome で `chrome://extensions` を開き、デベロッパーモードをオンにする
 3. 「パッケージ化されていない拡張機能を読み込む」で `dist/chrome` を選ぶ
 
-- **ツールバー左クリック**: 8色の保存先。任意で annotation を書いてから色をクリック。ポップアップが開いているときは `1`–`8` でも保存できる
-- **ページ右クリック / ツールバー右クリック**: 階層メニューからリンクを開く
-- **オプション**: Markdown の編集、`.md` の import / export
-- **ショートカット**: `Alt+1`–`Alt+4` を候補として登録する。`5`–`8` は `chrome://extensions/shortcuts` で自分で割り当てる（Chrome が自動割り当てる候補キーは4つまで）
+- **ツールバー左クリック**: 現在のページを `inbox`（`chrome.storage.local`）へ保存。バッジに件数が出る
+- **ページ右クリック / ツールバー右クリック**: import 済み Markdown と inbox を重ねた階層メニューからリンクを開く
+- **オプション**: Markdown の import と、inbox を `# inbox` に載せた merge 結果の export。編集画面は無い
 
 ## Markdown 方言
 
 ```markdown
-# Inbox
+# inbox
 
-- [Example](https://example.com)
-  Optional annotation.
+- [Saved page](https://example.com)
+
+# Wiki
 
 ## Subfolder
 
 - [Nested](https://example.org)
 ```
 
-- ATX 見出しだけ。先頭から8個の H1 が保存スロット（色と番号はスロット順、名前は H1 の文言）
-- H1 が8未満なら空のエリアを足す。9個目以降の H1 はメニューに出るが保存先にはしない
+- ATX 見出しだけ。H1 がメニューのトップ、H2 以降がフォルダ
 - ブックマークは `- [title](url)`。直後のインデント行が annotation
-- 保存は選んだ H1 セクションの末尾へ追記する
-- この方言以外の行は、保存や再出力のときに落ちることがある
-
-初期の8エリア名: Inbox / Later / Reading / Reference / Work / Personal / Archive / Misc。H1 を書き換えればボタン名も変わる。
+- ツールバー保存は Markdown を書き換えない。export のとき inbox を `# inbox` に足して、import 済み文書と merge する
+- この方言以外の行は、export の再出力で落ちることがある
 
 ## 開発
 

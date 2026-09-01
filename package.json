@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Personal bookmark extension: Markdown library plus eight color-coded save slots",
+  "description": "Personal bookmark extension: toolbar save to inbox, Markdown library menu",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
