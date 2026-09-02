@@ -9,7 +9,7 @@ Status: Accepted
 
 ## Decision
 
-- バッジの数字は常に `inboxEntries` の件数。0 件なら非表示。
+- バッジの数字は merge 後の `# inbox` 節のブックマーク数（メニュー表示と同じ）。0 件なら非表示。
 - 保存失敗時はバッジの数字はそのまま、背景色をエラー色にし、`chrome.notifications` で理由を表示する。
 - inbox 保存は `commands._execute_action` に割り当てる。manifest の `suggested_key` は使わない（Chrome は修飾キー3つなどの ⌃⌥⌘1 を suggested_key で登録できない）。mac では `chrome://extensions/shortcuts` で手動設定する。Windows / Linux も同様に未割り当てのまま始める。
 

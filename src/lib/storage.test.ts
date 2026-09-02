@@ -17,7 +17,7 @@ vi.stubGlobal("chrome", {
   },
 });
 
-import { MARKDOWN_STORAGE_KEY, ensureLibrary, getMarkdown } from "./storage";
+import { MARKDOWN_STORAGE_KEY, INBOX_STORAGE_KEY, ensureLibrary, getInbox, getMarkdown } from "./storage";
 
 describe("ensureLibrary", () => {
   beforeEach(() => {
@@ -42,5 +42,36 @@ describe("ensureLibrary", () => {
     const result = await ensureLibrary("  \n");
     expect(result).toBe("");
     expect(state.local.has(MARKDOWN_STORAGE_KEY)).toBe(false);
+  });
+});
+
+describe("getInbox", () => {
+  beforeEach(() => {
+    state.local.clear();
+  });
+
+  it("normalizes legacy entries missing type or annotation", async () => {
+    state.local.set(INBOX_STORAGE_KEY, [
+      { title: "Old", url: "https://old.example" },
+      {
+        title: "Legacy",
+        url: "https://legacy.example",
+        annotation: "note",
+      },
+    ]);
+    expect(await getInbox()).toEqual([
+      {
+        type: "bookmark",
+        title: "Old",
+        url: "https://old.example",
+        annotation: "",
+      },
+      {
+        type: "bookmark",
+        title: "Legacy",
+        url: "https://legacy.example",
+        annotation: "note",
+      },
+    ]);
   });
 });

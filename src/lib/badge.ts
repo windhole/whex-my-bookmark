@@ -1,4 +1,9 @@
-import { getInboxCount } from "./storage";
+import {
+  countInboxBookmarks,
+  mergeInbox,
+  parseMarkdown,
+} from "./markdown";
+import { getInbox, getMarkdown } from "./storage";
 
 export const BADGE_OK_COLOR = "#009E73";
 export const BADGE_ERROR_COLOR = "#D55E00";
@@ -19,8 +24,14 @@ export async function syncInboxBadge(
   await chrome.action.setBadgeText({ text: formatInboxBadgeText(count) });
 }
 
+export async function countDisplayedInbox(): Promise<number> {
+  const markdown = await getMarkdown();
+  const inbox = await getInbox();
+  return countInboxBookmarks(mergeInbox(parseMarkdown(markdown), inbox));
+}
+
 export async function refreshInboxBadge(
   state: BadgeState = "ok",
 ): Promise<void> {
-  await syncInboxBadge(await getInboxCount(), state);
+  await syncInboxBadge(await countDisplayedInbox(), state);
 }

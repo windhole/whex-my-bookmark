@@ -1,5 +1,5 @@
 import { DEFAULT_LIBRARY_MARKDOWN } from "virtual:default-library";
-import type { BookmarkEntry } from "./markdown";
+import { makeBookmark, type BookmarkEntry } from "./markdown";
 
 export const MARKDOWN_STORAGE_KEY = "bookmarkMarkdown";
 export const INBOX_STORAGE_KEY = "inboxEntries";
@@ -33,7 +33,12 @@ export async function getInbox(): Promise<BookmarkEntry[]> {
   const result = await chrome.storage.local.get(INBOX_STORAGE_KEY);
   const value = result[INBOX_STORAGE_KEY];
   if (!Array.isArray(value)) return [];
-  return value.filter(isBookmarkEntry);
+  const inbox: BookmarkEntry[] = [];
+  for (const item of value) {
+    const normalized = normalizeBookmarkEntry(item);
+    if (normalized) inbox.push(normalized);
+  }
+  return inbox;
 }
 
 export async function appendInbox(entry: BookmarkEntry): Promise<number> {
@@ -43,21 +48,19 @@ export async function appendInbox(entry: BookmarkEntry): Promise<number> {
   return inbox.length;
 }
 
-export async function getInboxCount(): Promise<number> {
-  return (await getInbox()).length;
-}
-
 export async function clearInbox(): Promise<void> {
   await chrome.storage.local.set({ [INBOX_STORAGE_KEY]: [] });
 }
 
-function isBookmarkEntry(value: unknown): value is BookmarkEntry {
-  if (!value || typeof value !== "object") return false;
-  const entry = value as BookmarkEntry;
-  return (
-    entry.type === "bookmark" &&
-    typeof entry.title === "string" &&
-    typeof entry.url === "string" &&
-    typeof entry.annotation === "string"
-  );
+function normalizeBookmarkEntry(value: unknown): BookmarkEntry | null {
+  if (!value || typeof value !== "object") return null;
+  const entry = value as Record<string, unknown>;
+  if (typeof entry.url !== "string" || entry.url.trim() === "") return null;
+  const title =
+    typeof entry.title === "string" && entry.title.trim() !== ""
+      ? entry.title
+      : entry.url;
+  const annotation =
+    typeof entry.annotation === "string" ? entry.annotation : "";
+  return makeBookmark({ title, url: entry.url, annotation });
 }

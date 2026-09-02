@@ -157,6 +157,24 @@ export function mergeInbox(
   };
 }
 
+export function countInboxBookmarks(doc: BookmarkDocument): number {
+  const inboxArea = doc.areas.find((area) => isInboxTitle(area.title));
+  if (!inboxArea) return 0;
+  return countBookmarkNodes(inboxArea.children);
+}
+
+function countBookmarkNodes(nodes: TreeNode[]): number {
+  let count = 0;
+  for (const node of nodes) {
+    if (node.type === "bookmark") {
+      count += 1;
+    } else {
+      count += countBookmarkNodes(node.children);
+    }
+  }
+  return count;
+}
+
 function writeChildren(children: TreeNode[], lines: string[]): void {
   for (const child of children) {
     lines.push("");

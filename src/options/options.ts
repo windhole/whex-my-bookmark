@@ -1,3 +1,4 @@
+import { countDisplayedInbox } from "../lib/badge";
 import { requiredElement } from "../lib/dom";
 import { exportFilename } from "../lib/export-filename";
 import { mergeInbox, parseMarkdown, serializeMarkdown } from "../lib/markdown";
@@ -14,9 +15,9 @@ function setStatus(text: string): void {
 }
 
 async function refreshCount(): Promise<void> {
-  const inbox = await getInbox();
+  const count = await countDisplayedInbox();
   countEl.textContent =
-    inbox.length === 1 ? "1 item in inbox" : `${inbox.length} items in inbox`;
+    count === 1 ? "1 item in inbox" : `${count} items in inbox`;
 }
 
 importEl.addEventListener("change", () => {

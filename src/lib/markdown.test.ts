@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { INBOX_TITLE } from "./areas";
 import {
+  countInboxBookmarks,
   makeBookmark,
   mergeInbox,
   parseMarkdown,
@@ -124,5 +125,43 @@ describe("mergeInbox", () => {
       annotation: "note",
     });
     expect(merged.areas[1].title).toBe("Wiki");
+  });
+});
+
+describe("countInboxBookmarks", () => {
+  it("counts bookmarks under # inbox after merging library and storage entries", () => {
+    const merged = mergeInbox(
+      parseMarkdown(`# inbox
+
+- [Library one](https://library-1.example)
+- [Library two](https://library-2.example)
+- [Library three](https://library-3.example)
+
+# Wiki
+`),
+      [
+        makeBookmark({
+          title: "Saved one",
+          url: "https://saved-1.example",
+          annotation: "",
+        }),
+        makeBookmark({
+          title: "Saved two",
+          url: "https://saved-2.example",
+          annotation: "",
+        }),
+        makeBookmark({
+          title: "Saved three",
+          url: "https://saved-3.example",
+          annotation: "",
+        }),
+        makeBookmark({
+          title: "Saved four",
+          url: "https://saved-4.example",
+          annotation: "",
+        }),
+      ],
+    );
+    expect(countInboxBookmarks(merged)).toBe(7);
   });
 });
