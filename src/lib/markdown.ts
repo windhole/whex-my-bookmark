@@ -163,6 +163,24 @@ export function countInboxBookmarks(doc: BookmarkDocument): number {
   return countBookmarkNodes(inboxArea.children);
 }
 
+export function collectInboxUrls(doc: BookmarkDocument): string[] {
+  const inboxArea = doc.areas.find((area) => isInboxTitle(area.title));
+  if (!inboxArea) return [];
+  return collectBookmarkUrls(inboxArea.children);
+}
+
+function collectBookmarkUrls(nodes: TreeNode[]): string[] {
+  const urls: string[] = [];
+  for (const node of nodes) {
+    if (node.type === "bookmark") {
+      urls.push(node.url);
+    } else {
+      urls.push(...collectBookmarkUrls(node.children));
+    }
+  }
+  return urls;
+}
+
 function countBookmarkNodes(nodes: TreeNode[]): number {
   let count = 0;
   for (const node of nodes) {

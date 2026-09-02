@@ -5,7 +5,7 @@ import {
   type MenuNode,
 } from "./lib/menu-tree";
 import { mergeInbox, parseMarkdown } from "./lib/markdown";
-import { notifySaveError } from "./lib/save-feedback";
+import { notifyDuplicateInbox, notifySaveError } from "./lib/save-feedback";
 import { saveCurrentPageToInbox } from "./lib/save";
 import { ensureLibrary, getInbox } from "./lib/storage";
 
@@ -66,7 +66,11 @@ async function bootstrap(): Promise<void> {
 async function saveFromToolbar(): Promise<void> {
   const result = await saveCurrentPageToInbox();
   if (!result.ok) {
-    await notifySaveError(result.reason);
+    if (result.reason === "duplicate") {
+      await notifyDuplicateInbox();
+    } else {
+      await notifySaveError(result.reason);
+    }
     return;
   }
   await refreshInboxBadge("ok");

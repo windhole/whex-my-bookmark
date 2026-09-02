@@ -36,7 +36,7 @@ vi.stubGlobal("chrome", {
   },
 });
 
-import { INBOX_STORAGE_KEY, clearInbox, getInbox } from "./storage";
+import { INBOX_STORAGE_KEY, MARKDOWN_STORAGE_KEY, clearInbox, getInbox } from "./storage";
 import { saveCurrentPageToInbox } from "./save";
 
 describe("saveCurrentPageToInbox", () => {
@@ -75,6 +75,38 @@ describe("saveCurrentPageToInbox", () => {
     state.tabs.push({ url: "chrome://extensions", title: "Extensions" });
     const result = await saveCurrentPageToInbox();
     expect(result).toEqual({ ok: false, reason: "unsavable" });
+  });
+
+  it("rejects a URL that is already in inbox storage", async () => {
+    state.local.set(INBOX_STORAGE_KEY, [
+      {
+        type: "bookmark",
+        title: "Existing",
+        url: "https://example.com/page",
+        annotation: "",
+      },
+    ]);
+    state.tabs.push({
+      url: "https://example.com/page/",
+      title: "Example Page",
+    });
+    const result = await saveCurrentPageToInbox();
+    expect(result).toEqual({ ok: false, reason: "duplicate" });
+    expect(await getInbox()).toHaveLength(1);
+  });
+
+  it("rejects a URL that already exists in the library inbox heading", async () => {
+    state.local.set(
+      MARKDOWN_STORAGE_KEY,
+      "# inbox\n\n- [Saved](https://example.com/page)\n",
+    );
+    state.tabs.push({
+      url: "https://EXAMPLE.com/page#top",
+      title: "Example Page",
+    });
+    const result = await saveCurrentPageToInbox();
+    expect(result).toEqual({ ok: false, reason: "duplicate" });
+    expect(state.local.has(INBOX_STORAGE_KEY)).toBe(false);
   });
 });
 

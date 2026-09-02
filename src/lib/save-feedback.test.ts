@@ -8,5 +8,6 @@ describe("saveErrorMessage", () => {
       "This page cannot be saved to inbox.",
     );
     expect(saveErrorMessage("failed")).toBe("Could not save to inbox.");
+    expect(saveErrorMessage("duplicate")).toBe("This URL is already in inbox.");
   });
 });

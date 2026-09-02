@@ -1,8 +1,13 @@
+import { isDisplayedInboxUrl } from "./inbox-urls";
 import { makeBookmark } from "./markdown";
 import { appendInbox } from "./storage";
 import { canSaveUrl, getActiveTabRaw, pageFromTab } from "./tabs";
 
-export type SaveFailureReason = "no-tab" | "unsavable" | "failed";
+export type SaveFailureReason =
+  | "no-tab"
+  | "unsavable"
+  | "duplicate"
+  | "failed";
 
 export type SaveResult =
   | { ok: true; title: string; inboxCount: number }
@@ -17,6 +22,9 @@ export async function saveCurrentPageToInbox(): Promise<SaveResult> {
       return { ok: false, reason: "unsavable" };
     }
     return { ok: false, reason: "no-tab" };
+  }
+  if (await isDisplayedInboxUrl(page.url)) {
+    return { ok: false, reason: "duplicate" };
   }
   try {
     const inboxCount = await appendInbox(
