@@ -11,9 +11,9 @@ Status: Accepted
 
 - バッジの数字は常に `inboxEntries` の件数。0 件なら非表示。
 - 保存失敗時はバッジの数字はそのまま、背景色をエラー色にし、`chrome.notifications` で理由を表示する。
-- inbox 保存は `commands._execute_action` に割り当て、mac のみ `MacCtrl+Option+Command+1`（⌃⌥⌘1）を suggested_key とする。Windows / Linux にはデフォルト割り当てしない。
+- inbox 保存は `commands._execute_action` に割り当てる。manifest の `suggested_key` は使わない（Chrome は修飾キー3つなどの ⌃⌥⌘1 を suggested_key で登録できない）。mac では `chrome://extensions/shortcuts` で手動設定する。Windows / Linux も同様に未割り当てのまま始める。
 
 ## Consequences
 
 - 件数とエラー状態を同時に見られる。通知のため `notifications` 権限が増える。
-- Chrome がショートカットを拒否した場合は `chrome://extensions/shortcuts` で手動設定が必要。競合時はサイレントに無効になることがある。
+- Chrome がショートカットを拒否した場合や、希望の ⌃⌥⌘1 を使う場合は `chrome://extensions/shortcuts` で手動設定する。競合時はサイレントに無効になることがある。
