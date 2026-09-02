@@ -1,4 +1,4 @@
-import { getInbox } from "./storage";
+import { getInboxCount } from "./storage";
 
 export const BADGE_OK_COLOR = "#009E73";
 export const BADGE_ERROR_COLOR = "#D55E00";
@@ -22,6 +22,5 @@ export async function syncInboxBadge(
 export async function refreshInboxBadge(
   state: BadgeState = "ok",
 ): Promise<void> {
-  const inbox = await getInbox();
-  await syncInboxBadge(inbox.length, state);
+  await syncInboxBadge(await getInboxCount(), state);
 }

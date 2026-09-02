@@ -1,4 +1,4 @@
-import { refreshInboxBadge } from "./lib/badge";
+import { refreshInboxBadge, syncInboxBadge } from "./lib/badge";
 import {
   areasToActionMenu,
   areasToPageMenu,
@@ -51,14 +51,15 @@ chrome.contextMenus.onClicked.addListener((info) => {
 });
 
 chrome.action.onClicked.addListener(() => {
-  void saveFromToolbar();
+  void enqueue(saveFromToolbar);
 });
 
+void refreshInboxBadge();
 void queueBootstrap();
 
 async function bootstrap(): Promise<void> {
-  await ensureLibrary();
   await refreshInboxBadge();
+  await ensureLibrary();
   await rebuildMenus();
 }
 
@@ -68,7 +69,7 @@ async function saveFromToolbar(): Promise<void> {
     await notifySaveError(result.reason);
     return;
   }
-  await refreshInboxBadge("ok");
+  await syncInboxBadge(result.inboxCount, "ok");
 }
 
 async function rebuildMenus(): Promise<void> {

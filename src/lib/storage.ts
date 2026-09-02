@@ -43,6 +43,10 @@ export async function appendInbox(entry: BookmarkEntry): Promise<number> {
   return inbox.length;
 }
 
+export async function getInboxCount(): Promise<number> {
+  return (await getInbox()).length;
+}
+
 export async function clearInbox(): Promise<void> {
   await chrome.storage.local.set({ [INBOX_STORAGE_KEY]: [] });
 }
