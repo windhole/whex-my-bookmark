@@ -1,9 +1,11 @@
+import { refreshInboxBadge } from "./lib/badge";
 import {
   areasToActionMenu,
   areasToPageMenu,
   type MenuNode,
 } from "./lib/menu-tree";
 import { mergeInbox, parseMarkdown } from "./lib/markdown";
+import { notifySaveError } from "./lib/save-feedback";
 import { saveCurrentPageToInbox } from "./lib/save";
 import { ensureLibrary, getInbox } from "./lib/storage";
 
@@ -40,7 +42,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
     void queueMenuRebuild();
   }
   if (changes.inboxEntries) {
-    void refreshBadge();
+    void refreshInboxBadge();
   }
 });
 
@@ -56,27 +58,17 @@ void queueBootstrap();
 
 async function bootstrap(): Promise<void> {
   await ensureLibrary();
-  await refreshBadge();
+  await refreshInboxBadge();
   await rebuildMenus();
-}
-
-async function refreshBadge(): Promise<void> {
-  const inbox = await getInbox();
-  await chrome.action.setBadgeBackgroundColor({ color: "#009E73" });
-  await chrome.action.setBadgeText({
-    text: inbox.length > 0 ? String(inbox.length) : "",
-  });
 }
 
 async function saveFromToolbar(): Promise<void> {
   const result = await saveCurrentPageToInbox();
   if (!result.ok) {
-    await chrome.action.setBadgeBackgroundColor({ color: "#D55E00" });
-    await chrome.action.setBadgeText({ text: "!" });
+    await notifySaveError(result.reason);
     return;
   }
-  await chrome.action.setBadgeBackgroundColor({ color: "#009E73" });
-  await chrome.action.setBadgeText({ text: String(result.inboxCount) });
+  await refreshInboxBadge("ok");
 }
 
 async function rebuildMenus(): Promise<void> {

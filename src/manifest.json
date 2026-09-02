@@ -3,7 +3,7 @@
   "name": "My Bookmark",
   "version": "0.1.0",
   "description": "Save the current page to inbox; browse an imported Markdown library.",
-  "permissions": ["storage", "contextMenus", "tabs"],
+  "permissions": ["storage", "contextMenus", "tabs", "notifications"],
   "icons": {
     "16": "src/icons/icon16.png",
     "32": "src/icons/icon32.png",
@@ -19,6 +19,14 @@
     }
   },
   "options_page": "src/options/index.html",
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "mac": "MacCtrl+Option+Command+1"
+      },
+      "description": "Save current page to inbox"
+    }
+  },
   "background": {
     "service_worker": "src/background.ts",
     "type": "module"

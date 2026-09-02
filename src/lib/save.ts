@@ -1,14 +1,21 @@
 import { makeBookmark } from "./markdown";
 import { appendInbox } from "./storage";
-import { getPageToSave } from "./tabs";
+import { canSaveUrl, getActiveTabRaw, pageFromTab } from "./tabs";
+
+export type SaveFailureReason = "no-tab" | "unsavable" | "failed";
 
 export type SaveResult =
   | { ok: true; title: string; inboxCount: number }
-  | { ok: false; reason: "no-tab" | "unsavable" | "failed" };
+  | { ok: false; reason: SaveFailureReason };
 
 export async function saveCurrentPageToInbox(): Promise<SaveResult> {
-  const page = await getPageToSave();
+  const tab = await getActiveTabRaw();
+  const page = pageFromTab(tab);
   if (!page) {
+    const url = tab?.url || tab?.pendingUrl;
+    if (url && !canSaveUrl(url)) {
+      return { ok: false, reason: "unsavable" };
+    }
     return { ok: false, reason: "no-tab" };
   }
   try {

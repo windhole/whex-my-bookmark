@@ -74,7 +74,7 @@ describe("saveCurrentPageToInbox", () => {
   it("refuses chrome:// tabs", async () => {
     state.tabs.push({ url: "chrome://extensions", title: "Extensions" });
     const result = await saveCurrentPageToInbox();
-    expect(result).toEqual({ ok: false, reason: "no-tab" });
+    expect(result).toEqual({ ok: false, reason: "unsavable" });
   });
 });
 

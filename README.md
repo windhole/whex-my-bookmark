@@ -11,7 +11,8 @@ Firefox / Safari 向けパッケージはまだ出さない。`make firefox` と
 3. Chrome で `chrome://extensions` を開き、デベロッパーモードをオンにする
 4. 「パッケージ化されていない拡張機能を読み込む」で `dist/chrome` を選ぶ
 
-- **ツールバー左クリック**: 現在のページを `inbox`（`chrome.storage.local`）へ保存。バッジに件数が出る
+- **ツールバー左クリック**（macOS ショートカット: `Ctrl+Option+Command+1`）: 現在のページを `inbox`（`chrome.storage.local`）へ保存。バッジには inbox の件数が出る（0 件なら非表示）。保存に失敗したときは通知で理由を表示し、バッジの数字は inbox 件数のまま
+- ショートカットが効かないときは `chrome://extensions/shortcuts` で **Save current page to inbox** を確認する
 - **ページ右クリック / ツールバー右クリック**: 書庫 Markdown と inbox を重ねた階層メニューからリンクを開く。書庫の初期値は、storage にまだ無いときだけビルド時の `data/bookmarks.md`
 - **オプション**: Markdown の import、inbox を `# inbox` に載せた merge 結果の export（ファイル名は `bookmarks_YYYYMMDD-HHmm.md`）、inbox の一括消去。編集画面は無い
 - `data/bookmarks.md` を直したらビルドし直す。すでに書庫キーがあるプロファイルは、オプションから import し直すか `bookmarkMarkdown` を消す

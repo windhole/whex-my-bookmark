@@ -19,29 +19,34 @@ export function pageFromTab(
   return { url, title: tab.title?.trim() || url };
 }
 
-export async function getActiveTab(): Promise<chrome.tabs.Tab | undefined> {
+export async function getActiveTabRaw(): Promise<chrome.tabs.Tab | undefined> {
   const lastNormal = await chrome.windows
     .getLastFocused({ populate: true, windowTypes: ["normal"] })
     .catch(() => undefined);
   const fromNormal = lastNormal?.tabs?.find((tab) => tab.active);
-  if (pageFromTab(fromNormal)) return fromNormal;
+  if (fromNormal) return fromNormal;
 
   const [focused] = await chrome.tabs.query({
     active: true,
     lastFocusedWindow: true,
   });
-  if (pageFromTab(focused)) return focused;
+  if (focused) return focused;
 
   const [current] = await chrome.tabs.query({
     active: true,
     currentWindow: true,
   });
-  if (pageFromTab(current)) return current;
+  if (current) return current;
 
   const activeTabs = await chrome.tabs.query({ active: true });
-  return activeTabs.find((tab) => pageFromTab(tab));
+  return activeTabs[0];
+}
+
+export async function getActiveTab(): Promise<chrome.tabs.Tab | undefined> {
+  const tab = await getActiveTabRaw();
+  return pageFromTab(tab) ? tab : undefined;
 }
 
 export async function getPageToSave(): Promise<PageToSave | undefined> {
-  return pageFromTab(await getActiveTab());
+  return pageFromTab(await getActiveTabRaw());
 }
