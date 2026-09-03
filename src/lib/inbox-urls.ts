@@ -1,5 +1,5 @@
-import { collectInboxUrls, mergeInbox, parseMarkdown } from "./markdown";
-import { getInbox, getMarkdown } from "./storage";
+import { collectInboxUrls } from "./markdown";
+import { getMergedDocument } from "./merged-document";
 
 export function normalizeInboxUrl(url: string): string {
   const trimmed = url.trim();
@@ -16,9 +16,7 @@ export function normalizeInboxUrl(url: string): string {
 }
 
 export async function getDisplayedInboxUrlKeys(): Promise<Set<string>> {
-  const markdown = await getMarkdown();
-  const inbox = await getInbox();
-  const urls = collectInboxUrls(mergeInbox(parseMarkdown(markdown), inbox));
+  const urls = collectInboxUrls(await getMergedDocument());
   return new Set(urls.map(normalizeInboxUrl));
 }
 

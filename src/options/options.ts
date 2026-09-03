@@ -1,14 +1,18 @@
 import { countDisplayedInbox } from "../lib/badge";
 import { requiredElement } from "../lib/dom";
 import { exportFilename } from "../lib/export-filename";
-import { mergeInbox, parseMarkdown, serializeMarkdown } from "../lib/markdown";
+import { serializeMarkdown } from "../lib/markdown";
+import { getMergedDocument } from "../lib/merged-document";
 import { clearInbox, ensureLibrary, getInbox, setMarkdown } from "../lib/storage";
 
 const importEl = requiredElement("#import", HTMLInputElement);
 const exportEl = requiredElement("#export", HTMLButtonElement);
 const clearEl = requiredElement("#clear-inbox", HTMLButtonElement);
+const openListEl = requiredElement("#open-list", HTMLAnchorElement);
 const countEl = requiredElement("#inbox-count", HTMLElement);
 const statusEl = requiredElement("#status", HTMLElement);
+
+openListEl.href = chrome.runtime.getURL("src/browse/index.html");
 
 function setStatus(text: string): void {
   statusEl.textContent = text;
@@ -32,11 +36,7 @@ importEl.addEventListener("change", () => {
 
 exportEl.addEventListener("click", () => {
   void (async () => {
-    const markdown = await ensureLibrary();
-    const inbox = await getInbox();
-    const merged = serializeMarkdown(
-      mergeInbox(parseMarkdown(markdown), inbox),
-    );
+    const merged = serializeMarkdown(await getMergedDocument(true));
     const blob = new Blob([merged], { type: "text/markdown" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");

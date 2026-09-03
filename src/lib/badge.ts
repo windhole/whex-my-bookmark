@@ -1,9 +1,5 @@
-import {
-  countInboxBookmarks,
-  mergeInbox,
-  parseMarkdown,
-} from "./markdown";
-import { getInbox, getMarkdown } from "./storage";
+import { countInboxBookmarks } from "./markdown";
+import { getMergedDocument } from "./merged-document";
 
 export const BADGE_OK_COLOR = "#009E73";
 export const BADGE_ERROR_COLOR = "#D55E00";
@@ -25,9 +21,7 @@ export async function syncInboxBadge(
 }
 
 export async function countDisplayedInbox(): Promise<number> {
-  const markdown = await getMarkdown();
-  const inbox = await getInbox();
-  return countInboxBookmarks(mergeInbox(parseMarkdown(markdown), inbox));
+  return countInboxBookmarks(await getMergedDocument());
 }
 
 export async function refreshInboxBadge(

@@ -4,12 +4,15 @@ import {
   areasToPageMenu,
   type MenuNode,
 } from "./lib/menu-tree";
-import { mergeInbox, parseMarkdown } from "./lib/markdown";
+import { getMergedDocument } from "./lib/merged-document";
 import { notifyDuplicateInbox, notifySaveError } from "./lib/save-feedback";
 import { saveCurrentPageToInbox } from "./lib/save";
-import { ensureLibrary, getInbox } from "./lib/storage";
+import { ensureLibrary } from "./lib/storage";
 
 const PAGE_ROOT_ID = "whex-page-root";
+const OPEN_LIST_ACTION_ID = "whex-open-list-action";
+const OPEN_LIST_PAGE_ID = "whex-open-list-page";
+const BROWSE_PAGE_PATH = "src/browse/index.html";
 const SESSION_TARGETS_KEY = "menuTargets";
 const SESSION_MENU_IDS_KEY = "menuItemIds";
 
@@ -47,7 +50,12 @@ chrome.storage.onChanged.addListener((changes, area) => {
 });
 
 chrome.contextMenus.onClicked.addListener((info) => {
-  void openMenuTarget(String(info.menuItemId));
+  const id = String(info.menuItemId);
+  if (id === OPEN_LIST_ACTION_ID || id === OPEN_LIST_PAGE_ID) {
+    void openBrowsePage();
+    return;
+  }
+  void openMenuTarget(id);
 });
 
 chrome.action.onClicked.addListener(() => {
@@ -77,9 +85,7 @@ async function saveFromToolbar(): Promise<void> {
 }
 
 async function rebuildMenus(): Promise<void> {
-  const markdown = await ensureLibrary();
-  const inbox = await getInbox();
-  const { areas } = mergeInbox(parseMarkdown(markdown), inbox);
+  const { areas } = await getMergedDocument(true);
 
   await clearMenus();
 
@@ -95,6 +101,13 @@ async function rebuildMenus(): Promise<void> {
     contexts: ["page"],
   });
   createdIds.push(PAGE_ROOT_ID);
+  await createMenuItem({
+    id: OPEN_LIST_PAGE_ID,
+    parentId: PAGE_ROOT_ID,
+    title: "Open bookmark list",
+    contexts: ["page"],
+  });
+  createdIds.push(OPEN_LIST_PAGE_ID);
   await createItems(
     pageRoot.children,
     PAGE_ROOT_ID,
@@ -103,6 +116,13 @@ async function rebuildMenus(): Promise<void> {
     targets,
     createdIds,
   );
+
+  await createMenuItem({
+    id: OPEN_LIST_ACTION_ID,
+    title: "Open bookmark list",
+    contexts: ["action"],
+  });
+  createdIds.push(OPEN_LIST_ACTION_ID);
 
   const actionItems = areasToActionMenu(areas);
   await createItems(
@@ -118,6 +138,10 @@ async function rebuildMenus(): Promise<void> {
     [SESSION_TARGETS_KEY]: targets,
     [SESSION_MENU_IDS_KEY]: createdIds,
   });
+}
+
+async function openBrowsePage(): Promise<void> {
+  await chrome.tabs.create({ url: chrome.runtime.getURL(BROWSE_PAGE_PATH) });
 }
 
 type MenuContexts = NonNullable<chrome.contextMenus.CreateProperties["contexts"]>;

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>My Bookmark — Library</title>
+    <link rel="stylesheet" href="./browse.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <header class="top">
+        <div class="brand">
+          <p class="eyebrow">My Bookmark</p>
+          <h1>Library</h1>
+        </div>
+        <p class="summary" id="summary" aria-live="polite"></p>
+        <label class="search">
+          <span class="sr-only">Search bookmarks</span>
+          <input
+            id="search"
+            type="search"
+            placeholder="Search title, URL, area, notes…"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </label>
+      </header>
+      <main id="results" class="results"></main>
+      <p id="empty" class="empty" hidden>No bookmarks match.</p>
+    </div>
+    <script type="module" src="./browse.ts"></script>
+  </body>
+</html>

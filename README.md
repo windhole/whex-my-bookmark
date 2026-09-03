@@ -13,7 +13,8 @@ Firefox / Safari 向けパッケージはまだ出さない。`make firefox` と
 
 - **ツールバー左クリック**: 現在のページを `inbox`（`chrome.storage.local`）へ保存。同じ URL が merge 後の `# inbox` に既にある場合は保存しない（バッジが短時間エラー色になる）。バッジには inbox の件数が出る（0 件なら非表示）。その他の保存失敗時は通知で理由を表示し、バッジの数字は inbox 件数のまま
 - **キーボードショートカット**（macOS）: manifest にはデフォルトを置かない。`chrome://extensions/shortcuts` で **Save current page to inbox** に `Ctrl+Option+Command+1`（⌃⌥⌘1）を手動で割り当てる。Chrome が受け付けない場合は別の組み合わせを選ぶ
-- **ページ右クリック / ツールバー右クリック**: 書庫 Markdown と inbox を重ねた階層メニューからリンクを開く。書庫の初期値は、storage にまだ無いときだけビルド時の `data/bookmarks.md`
+- **ページ右クリック / ツールバー右クリック**: 書庫 Markdown と inbox を重ねた階層メニューからリンクを開く。先頭の **Open bookmark list** で一覧ページを開く。書庫の初期値は、storage にまだ無いときだけビルド時の `data/bookmarks.md`
+- **一覧ページ**（`chrome-extension://<拡張ID>/src/browse/index.html`）: export と同じ merge 結果を検索付きで閲覧。inbox 保存や import は開いたままほぼ同時に反映。拡張 ID は `chrome://extensions` の詳細で確認できる。オプションの **Open library** からも開ける
 - **オプション**: Markdown の import、inbox を `# inbox` に載せた merge 結果の export（ファイル名は `bookmarks_YYYYMMDD-HHmm.md`）、inbox の一括消去。編集画面は無い
 - `data/bookmarks.md` を直したらビルドし直す。すでに書庫キーがあるプロファイルは、オプションから import し直すか `bookmarkMarkdown` を消す
 

@@ -61,6 +61,16 @@ button.danger {
   border-color: #d55e00;
 }
 
+a.link {
+  color: #0072b2;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+a.link:hover {
+  text-decoration: underline;
+}
+
 #inbox-count {
   font-size: 13px;
   opacity: 0.8;

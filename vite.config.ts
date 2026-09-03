@@ -48,6 +48,11 @@ export default defineConfig({
     outDir: "dist/chrome",
     emptyOutDir: true,
     modulePreload: false,
+    rollupOptions: {
+      input: {
+        browse: path.resolve(root, "src/browse/index.html"),
+      },
+    },
   },
   server: {
     cors: {
