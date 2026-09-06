@@ -190,6 +190,13 @@ h1 {
   background: color-mix(in srgb, white 70%, transparent);
 }
 
+.version {
+  margin: 28px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+  font-family: "SF Mono", "Cascadia Code", "Consolas", monospace;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;

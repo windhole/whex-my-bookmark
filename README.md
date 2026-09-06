@@ -46,4 +46,12 @@ npm run build    # または make chrome
 npm run dev      # Vite + CRXJS の開発ビルド
 ```
 
+### バージョン
+
+正本は `package.json` の `version`。ビルド時に manifest の `version` / `version_name`（例: `0.2.0 (a1b2c3d)`）へ埋め込む。
+
+- 確認: `make show-version`、`chrome://extensions` のバージョン表示、オプション画面下部、一覧ページ下部、ツールバー tooltip
+- 上げ方: `make version-patch`（または `version-minor` / `version-major`）→ `make chrome` → 拡張を再読み込み → 表示が変わったか確認
+  - `make show-version` は現在の `package.json` バージョン、ビルド済み `dist/chrome`、次の patch/minor/major を表示する
+
 設計判断は [docs/adr/](docs/adr/)。作業ログは [docs/devlog/](docs/devlog/)。

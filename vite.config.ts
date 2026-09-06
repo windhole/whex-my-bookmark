@@ -3,13 +3,19 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig, type Plugin } from "vite";
+import { resolveVersionInfo } from "./scripts/version-info";
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const bookmarksPath = path.join(root, "data", "bookmarks.md");
+const { version, gitSha, versionName } = resolveVersionInfo();
 
-const manifest = JSON.parse(
-  readFileSync(new URL("./src/manifest.json", import.meta.url), "utf8"),
-);
+const manifest = {
+  ...JSON.parse(
+    readFileSync(new URL("./src/manifest.json", import.meta.url), "utf8"),
+  ),
+  version,
+  version_name: versionName,
+};
 
 function defaultLibraryPlugin(): Plugin {
   const virtual = "virtual:default-library";
@@ -29,9 +35,28 @@ function defaultLibraryPlugin(): Plugin {
   };
 }
 
+function appVersionPlugin(): Plugin {
+  const virtual = "virtual:app-version";
+  const resolved = `\0${virtual}`;
+  return {
+    name: "app-version",
+    resolveId(id) {
+      if (id === virtual) return resolved;
+    },
+    load(id) {
+      if (id !== resolved) return;
+      return `export const APP_VERSION = ${JSON.stringify(version)};
+export const APP_GIT_SHA = ${JSON.stringify(gitSha)};
+export const APP_VERSION_NAME = ${JSON.stringify(versionName)};
+`;
+    },
+  };
+}
+
 export default defineConfig({
   plugins: [
     defaultLibraryPlugin(),
+    appVersionPlugin(),
     {
       name: "strip-crossorigin",
       enforce: "post",

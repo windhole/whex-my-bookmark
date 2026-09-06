@@ -1,3 +1,4 @@
+import { APP_VERSION_NAME } from "virtual:app-version";
 import { refreshInboxBadge } from "./lib/badge";
 import {
   areasToActionMenu,
@@ -15,6 +16,8 @@ const OPEN_LIST_PAGE_ID = "whex-open-list-page";
 const BROWSE_PAGE_PATH = "src/browse/index.html";
 const SESSION_TARGETS_KEY = "menuTargets";
 const SESSION_MENU_IDS_KEY = "menuItemIds";
+
+const ACTION_TITLE = `Save current page to inbox · v${APP_VERSION_NAME}`;
 
 let work: Promise<void> = Promise.resolve();
 
@@ -66,6 +69,7 @@ void refreshInboxBadge();
 void queueBootstrap();
 
 async function bootstrap(): Promise<void> {
+  await chrome.action.setTitle({ title: ACTION_TITLE });
   await refreshInboxBadge();
   await ensureLibrary();
   await rebuildMenus();

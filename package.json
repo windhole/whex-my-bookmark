@@ -1,6 +1,6 @@
 {
   "name": "whex-my-bookmark",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "Personal bookmark extension: toolbar save to inbox, Markdown library menu",
@@ -8,7 +8,10 @@
     "dev": "vite",
     "build": "vite build",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "version:patch": "npm version patch --no-git-tag-version",
+    "version:minor": "npm version minor --no-git-tag-version",
+    "version:major": "npm version major --no-git-tag-version"
   },
   "devDependencies": {
     "@crxjs/vite-plugin": "^2.7.1",

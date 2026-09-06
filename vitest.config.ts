@@ -7,6 +7,9 @@ export default defineConfig({
       "virtual:default-library": fileURLToPath(
         new URL("./src/lib/default-library.ts", import.meta.url),
       ),
+      "virtual:app-version": fileURLToPath(
+        new URL("./src/lib/app-version.ts", import.meta.url),
+      ),
     },
   },
   test: {

@@ -1,3 +1,4 @@
+import { APP_VERSION_NAME } from "virtual:app-version";
 import { countDisplayedInbox } from "../lib/badge";
 import { requiredElement } from "../lib/dom";
 import { exportFilename } from "../lib/export-filename";
@@ -11,8 +12,10 @@ const clearEl = requiredElement("#clear-inbox", HTMLButtonElement);
 const openListEl = requiredElement("#open-list", HTMLAnchorElement);
 const countEl = requiredElement("#inbox-count", HTMLElement);
 const statusEl = requiredElement("#status", HTMLElement);
+const versionEl = requiredElement("#app-version", HTMLElement);
 
 openListEl.href = chrome.runtime.getURL("src/browse/index.html");
+versionEl.textContent = `v${chrome.runtime.getManifest().version_name ?? APP_VERSION_NAME}`;
 
 function setStatus(text: string): void {
   statusEl.textContent = text;

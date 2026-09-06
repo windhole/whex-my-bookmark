@@ -1,3 +1,4 @@
+import { APP_VERSION_NAME } from "virtual:app-version";
 import {
   filterFlatBookmarks,
   flattenBookmarks,
@@ -11,6 +12,9 @@ const searchEl = requiredElement("#search", HTMLInputElement);
 const resultsEl = requiredElement("#results", HTMLElement);
 const summaryEl = requiredElement("#summary", HTMLElement);
 const emptyEl = requiredElement("#empty", HTMLElement);
+const versionEl = requiredElement("#app-version", HTMLElement);
+
+versionEl.textContent = `v${chrome.runtime.getManifest().version_name ?? APP_VERSION_NAME}`;
 
 let allItems: FlatBookmark[] = [];
 let query = "";

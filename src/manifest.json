@@ -1,7 +1,8 @@
 {
   "manifest_version": 3,
   "name": "My Bookmark",
-  "version": "0.1.0",
+  "version": "0.2.0",
+  "version_name": "0.2.0",
   "description": "Save the current page to inbox; browse an imported Markdown library.",
   "permissions": ["storage", "contextMenus", "tabs", "notifications"],
   "icons": {
