@@ -20,7 +20,7 @@ export const MAX_MENU_DEPTH = 5;
 export function areasToPageMenu(areas: AreaNode[]): MenuFolder {
   return {
     kind: "folder",
-    title: "My Bookmark",
+    title: "Bookmarks",
     children: convertNodes(areasAsFolders(areas), 2, MAX_MENU_DEPTH, ""),
   };
 }
@@ -65,10 +65,12 @@ function convertNodes(
       );
       continue;
     }
+    const children = convertNodes(node.children, depth + 1, maxDepth, "");
+    if (children.length === 0) continue;
     out.push({
       kind: "folder",
       title: truncate(`${prefix}${node.title}`),
-      children: convertNodes(node.children, depth + 1, maxDepth, ""),
+      children,
     });
   }
   return out;

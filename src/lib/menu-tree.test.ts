@@ -23,7 +23,7 @@ describe("areasToPageMenu", () => {
 - [Leaf](https://leaf.example)
 `);
     const menu = areasToPageMenu(doc.areas);
-    expect(menu.title).toBe("My Bookmark");
+    expect(menu.title).toBe("Bookmarks");
     expect(menu.children[0]).toMatchObject({
       kind: "folder",
       title: "Library",
@@ -39,11 +39,32 @@ describe("areasToPageMenu", () => {
     walk(menu);
     expect(serialized.some((t) => t.includes("Leaf"))).toBe(true);
   });
+
+  it("omits empty folders", () => {
+    const menu = areasToPageMenu(
+      parseMarkdown(`# Empty
+
+# Wiki
+
+- [Docs](https://docs.example)
+`).areas,
+    );
+    expect(menu.children.map((child) => child.title)).toEqual(["Wiki"]);
+  });
 });
 
 describe("areasToActionMenu", () => {
-  it("puts H1s at the toolbar menu root", () => {
-    const menu = areasToActionMenu(parseMarkdown("# inbox\n# Wiki\n").areas);
+  it("puts H1s with bookmarks at the toolbar menu root", () => {
+    const menu = areasToActionMenu(
+      parseMarkdown(`# inbox
+
+- [A](https://a.example)
+
+# Wiki
+
+- [B](https://b.example)
+`).areas,
+    );
     expect(menu.map((item) => item.title)).toEqual(["inbox", "Wiki"]);
   });
 });

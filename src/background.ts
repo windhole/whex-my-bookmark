@@ -91,8 +91,18 @@ async function rebuildMenus(): Promise<void> {
 
   const targets: Record<string, string> = {};
   const createdIds: string[] = [];
-  let seq = 0;
-  const nextId = () => `m${++seq}`;
+  const usedIds = new Set<string>();
+  const nextFolderId = (() => {
+    let seq = 0;
+    return (label: string) => {
+      let id = `f-${stableKey(label)}`;
+      while (usedIds.has(id)) {
+        id = `f-${stableKey(label)}-${++seq}`;
+      }
+      usedIds.add(id);
+      return id;
+    };
+  })();
 
   const pageRoot = areasToPageMenu(areas);
   await createMenuItem({
@@ -112,9 +122,10 @@ async function rebuildMenus(): Promise<void> {
     pageRoot.children,
     PAGE_ROOT_ID,
     ["page"],
-    nextId,
+    nextFolderId,
     targets,
     createdIds,
+    usedIds,
   );
 
   await createMenuItem({
@@ -129,9 +140,10 @@ async function rebuildMenus(): Promise<void> {
     actionItems,
     undefined,
     ["action"],
-    nextId,
+    nextFolderId,
     targets,
     createdIds,
+    usedIds,
   );
 
   await chrome.storage.session.set({
@@ -150,12 +162,31 @@ async function createItems(
   nodes: MenuNode[],
   parentId: string | undefined,
   contexts: MenuContexts,
-  nextId: () => string,
+  nextFolderId: (label: string) => string,
   targets: Record<string, string>,
   createdIds: string[],
+  usedIds: Set<string>,
 ): Promise<void> {
   for (const node of nodes) {
-    const id = nextId();
+    if (node.kind === "link") {
+      const id = uniqueLinkId(node.url, usedIds);
+      const properties: chrome.contextMenus.CreateProperties = {
+        id,
+        title: node.title,
+        contexts,
+      };
+      if (parentId !== undefined) {
+        properties.parentId = parentId;
+      }
+      await createMenuItem(properties);
+      createdIds.push(id);
+      targets[id] = node.url;
+      continue;
+    }
+
+    const id = nextFolderId(
+      parentId ? `${parentId}/${node.title}` : node.title,
+    );
     const properties: chrome.contextMenus.CreateProperties = {
       id,
       title: node.title,
@@ -166,19 +197,35 @@ async function createItems(
     }
     await createMenuItem(properties);
     createdIds.push(id);
-    if (node.kind === "link") {
-      targets[id] = node.url;
-    } else {
-      await createItems(
-        node.children,
-        id,
-        contexts,
-        nextId,
-        targets,
-        createdIds,
-      );
-    }
+    await createItems(
+      node.children,
+      id,
+      contexts,
+      nextFolderId,
+      targets,
+      createdIds,
+      usedIds,
+    );
   }
+}
+
+function uniqueLinkId(url: string, usedIds: Set<string>): string {
+  let id = `u-${stableKey(url)}`;
+  let n = 0;
+  while (usedIds.has(id)) {
+    id = `u-${stableKey(url)}-${++n}`;
+  }
+  usedIds.add(id);
+  return id;
+}
+
+function stableKey(value: string): string {
+  let hash = 2166136261;
+  for (let i = 0; i < value.length; i++) {
+    hash ^= value.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(16);
 }
 
 async function clearMenus(): Promise<void> {
@@ -233,13 +280,17 @@ function removeAllMenuItems(): Promise<void> {
 
 async function openMenuTarget(menuItemId: string): Promise<void> {
   const stored = await chrome.storage.session.get(SESSION_TARGETS_KEY);
-  let targets = stored[SESSION_TARGETS_KEY] as Record<string, string> | undefined;
-  if (!targets || !targets[menuItemId]) {
-    await queueMenuRebuild();
-    const retry = await chrome.storage.session.get(SESSION_TARGETS_KEY);
-    targets = retry[SESSION_TARGETS_KEY] as Record<string, string> | undefined;
-  }
+  const targets = stored[SESSION_TARGETS_KEY] as
+    | Record<string, string>
+    | undefined;
   const url = targets?.[menuItemId];
-  if (!url) return;
+  if (!url) {
+    // Folder / unknown item: refresh menus if session was lost, but never open
+    // a remapped id (sequential ids used to point at the wrong bookmark).
+    if (!targets) {
+      await queueMenuRebuild();
+    }
+    return;
+  }
   await chrome.tabs.create({ url });
 }
