@@ -1,6 +1,6 @@
 {
   "name": "whex-my-bookmark",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "type": "module",
   "description": "Personal bookmark extension: toolbar save to inbox, Markdown library menu",
